@@ -4,7 +4,7 @@
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix vs: <http://www.w3.org/2003/06/sw-vocab-status/ns#> .
 @prefix o: <http://omeka.org/s/vocabs/o#> .
-@prefix planargu: <https://jardindesconnaissances.univ-paris8.fr/onto/planargu#>.
+@prefix planargu: <https://jardindesconnaissances.univ-paris8.fr/onto/planargu#> .
 
 <https://jardindesconnaissances.univ-paris8.fr/onto/planargu> a owl:Ontology ;
     dcterms:title "Vocabulaire pour des plans argmentatifs" .
