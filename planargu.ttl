@@ -20,6 +20,6 @@ planargu:Paragraphe a rdfs:Class ;
     vs:term_status "experimental" .
 
 planargu:hasParagraphe a rdf:Property ;
-    rdfs:label "A des paragraphe" ;
+    rdfs:label "A des paragraphes" ;
     rdfs:domain o:Resource ;
     vs:term_status "experimental" .
