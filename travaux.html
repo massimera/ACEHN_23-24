@@ -10,25 +10,44 @@
 </head>
 <body>
 <h1>Travaux de <span class="rouge" id="etuNom" ></span></h1>    
-<h2>Etudiant AVUN</h2>
-<h3 id='promotion' class="rouge">Promotion 2022-2023</h3>
+<h2>Etudiant ACEHN</h2>
+<h3 id='promotion' class="rouge">Promotion 2023-2024</h3>
 <div id="dimensions"></div>
 
 </body>
 <script>
-    let url= new URL(document.location),
+
+    let urlProjets = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSxYt7Ryf3U-TpOQP45b5FpdfKW6QG8oM40hkXa8y2kYl3PAawVGl21zjA6lZESIVHDPiOJYmxKHY1D/pub?gid=1607080238&single=true&output=csv",
+        projets, url= new URL(document.location),
         params = url.searchParams
-        login = params.get('login'),
+        numEtu = params.get('numEtu'),
         dimensions = ['physiques','acteurs','concepts']; 
 
-    console.log('valeur du paramètre login :'+login);
-    d3.select('#etuNom').html(login);
+    d3.csv(urlProjets).then(rs=>{
+        projets = rs;
+        console.log(projets);
+        if(numEtu){
+            let p = projets.filter(p=>p['N° étudiant 1']==numEtu || p['N° étudiant 2']==numEtu || p['N° étudiant 3']==numEtu )
+            if(p.length)voirTravaux(p[0]);
+        }
+    })
 
-    let dim = d3.select('#dimensions').selectAll('div').data(dimensions).enter().append('div')
-        .attr('id',d=>'div'+d);
-    dim.append('h4').attr('class',"titreDimension").html(d=>'Dimensions = '+d);
-    dim.append('iframe').attr('title',d=>'Dimensions = '+d)
-        .attr('src',d=>"svg/"+login+'-'+d+'.svg');
+    function voirTravaux(pro){
+        console.log('valeur du paramètre numEtu :'+numEtu);
+        d3.select('#etuNom').html(numEtu);
+        //définie l'url du repository
+        let urlRepo = pro['Adresse du repository github'], urlPages = pro.urlPages+"/modelisations/";
+        //affiche l'url du repository
+        d3.select('#dimensions').selectAll("h5").data([urlRepo,urlPages]).enter().append('H5').append('a')
+            .attr('href',d=>d).attr('target','_blanck').text(d=>d);
+        //affiche les dimensions existentielle
+        let dim = d3.select('#dimensions').selectAll('div').data(dimensions).enter().append('div')
+            .attr('id',d=>'div'+d);
+        dim.append('h4').attr('class',"titreDimension").html(d=>'Dimensions = '+d);
+        dim.append('h5').html(d=>urlPages+numEtu+'-'+d+'.svg');
+        dim.append('iframe').attr('title',d=>'Dimensions = '+d)
+            .attr('src',d=>urlPages+numEtu+'-'+d+'.svg');
 
+    }
 </script>
 </html>
