@@ -9,16 +9,19 @@
     <script src="https://d3js.org/d3.v7.min.js"></script>
 </head>
 <body>
-<h1>Travaux de <span class="rouge" id="etuNom" ></span></h1>    
-<h2>Etudiant ACEHN</h2>
-<h3 id='promotion' class="rouge">Promotion 2023-2024</h3>
+<H1 for="pet-select">Liste des étudiants ACEHN</H1>
+<h4 id='promotion' class="rouge">Promotion 2023-2024</h4>
+
+<ul id="listeEtu">
+</ul>    
+<h2>Travaux de <span class="rouge" id="etuNom" ></span></h2>    
 <div id="dimensions"></div>
 
 </body>
 <script>
 
     let urlProjets = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSxYt7Ryf3U-TpOQP45b5FpdfKW6QG8oM40hkXa8y2kYl3PAawVGl21zjA6lZESIVHDPiOJYmxKHY1D/pub?gid=1607080238&single=true&output=csv",
-        projets, url= new URL(document.location),
+        projets, etudiants = [], url= new URL(document.location),
         params = url.searchParams
         numEtu = params.get('numEtu'),
         dimensions = ['physiques','acteurs','concepts']; 
@@ -26,27 +29,47 @@
     d3.csv(urlProjets).then(rs=>{
         projets = rs;
         console.log(projets);
+
+        //création de la liste des étudiants
+        projets.forEach(p => {
+            for (let index = 1; index < 3; index++) {
+                if(p['N° étudiant '+index])etudiants.push({'id':p['N° étudiant '+index],'nom':p['Nom du collaborateur '+index],'p':p});            
+            }
+        });
+        d3.select('#listeEtu')
+            .selectAll("li").data(etudiants).enter().append('li')
+            .text(d=>d.id).text(d=>d.nom)
+            .on('click',voirTravauxEtudiant);
+
         if(numEtu){
-            let p = projets.filter(p=>p['N° étudiant 1']==numEtu || p['N° étudiant 2']==numEtu || p['N° étudiant 3']==numEtu )
-            if(p.length)voirTravaux(p[0]);
+            let e = etudiants.filter(p=>p.id==numEtu)
+            if(e.length)voirTravaux(e[0]);
         }
     })
 
-    function voirTravaux(pro){
-        console.log('valeur du paramètre numEtu :'+numEtu);
-        d3.select('#etuNom').html(numEtu);
+    function voirTravauxEtudiant(e,d){
+        voirTravaux(d);
+    }
+    function voirTravaux(etu){
+        console.log('étudiant',etu);
+        d3.select('#etuNom').html(etu.nom+' : '+etu.id);
         //définie l'url du repository
-        let urlRepo = pro['Adresse du repository github'], urlPages = pro.urlPages+"/modelisations/";
+        let urlRepo = etu.p['Adresse du repository github'], 
+            urlPages = etu.p.urlPages,
+            divDim = d3.select('#dimensions');
+        //initialise l'affichage
+        divDim.selectAll("h5").remove();
+        divDim.selectAll("div").remove();
         //affiche l'url du repository
-        d3.select('#dimensions').selectAll("h5").data([urlRepo,urlPages]).enter().append('H5').append('a')
+        divDim.selectAll("h5").selectAll("h5").data([urlRepo,urlPages]).enter().append('H5').append('a')
             .attr('href',d=>d).attr('target','_blanck').text(d=>d);
         //affiche les dimensions existentielle
-        let dim = d3.select('#dimensions').selectAll('div').data(dimensions).enter().append('div')
+        let dims = divDim.selectAll('div').data(dimensions).enter().append('div')
             .attr('id',d=>'div'+d);
-        dim.append('h4').attr('class',"titreDimension").html(d=>'Dimensions = '+d);
-        dim.append('h5').html(d=>urlPages+numEtu+'-'+d+'.svg');
-        dim.append('iframe').attr('title',d=>'Dimensions = '+d)
-            .attr('src',d=>urlPages+numEtu+'-'+d+'.svg');
+        dims.append('h4').attr('class',"titreDimension").html(d=>'Dimensions = '+d);
+        dims.append('h5').html(d=>urlPages+"/modelisations/"+etu.id+'-'+d+'.svg');
+        dims.append('iframe').attr('title',d=>'Dimensions = '+d)
+            .attr('src',d=>urlPages+"/modelisations/"+etu.id+'-'+d+'.svg');
 
     }
 </script>
