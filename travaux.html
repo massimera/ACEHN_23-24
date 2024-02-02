@@ -15,6 +15,7 @@
 <ul id="listeEtu">
 </ul>    
 <h2>Travaux de <span class="rouge" id="etuNom" ></span></h2>    
+<div id="projet"></div>
 <div id="dimensions"></div>
 
 </body>
@@ -56,13 +57,17 @@
         //définie l'url du repository
         let urlRepo = etu.p['Adresse du repository github'], 
             urlPages = etu.p.urlPages,
+            divProjet = d3.select('#projet');
             divDim = d3.select('#dimensions');
+
         //initialise l'affichage
-        divDim.selectAll("h5").remove();
+        divProjet.selectAll("h5").remove();
         divDim.selectAll("div").remove();
         //affiche l'url du repository
-        divDim.selectAll("h5").selectAll("h5").data([urlRepo,urlPages]).enter().append('H5').append('a')
-            .attr('href',d=>d).attr('target','_blanck').text(d=>d);
+        divProjet.selectAll("h5").data([urlRepo,urlPages]).enter().append('h5').append('a')
+            .attr('href',d=>{
+                return d;
+            }).attr('target','_blanck').text(d=>d);
         //affiche les dimensions existentielle
         let dims = divDim.selectAll('div').data(dimensions).enter().append('div')
             .attr('id',d=>'div'+d);
