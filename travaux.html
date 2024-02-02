@@ -15,6 +15,8 @@
 <ul id="listeEtu">
 </ul>    
 <h2>Travaux de <span class="rouge" id="etuNom" ></span></h2>    
+<div id="echelles"></div>
+
 <div id="projet"></div>
 <div id="dimensions"></div>
 
@@ -22,30 +24,39 @@
 <script>
 
     let urlProjets = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSxYt7Ryf3U-TpOQP45b5FpdfKW6QG8oM40hkXa8y2kYl3PAawVGl21zjA6lZESIVHDPiOJYmxKHY1D/pub?gid=1607080238&single=true&output=csv",
+        urlEtus = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQJRPQoU4941IWZd_0N_Mivoqa4bti82UaCdmGmIDVuCaEz6a-wWONdpMok1JNk73YBAKTMPgz6iZnU/pub?gid=235276481&single=true&output=csv",
         projets, etudiants = [], url= new URL(document.location),
-        params = url.searchParams
+        params = url.searchParams, etus,
         numEtu = params.get('numEtu'),
         dimensions = ['physiques','acteurs','concepts']; 
 
-    d3.csv(urlProjets).then(rs=>{
-        projets = rs;
-        console.log(projets);
+    d3.csv(urlEtus).then(rs=>{
+        etus = rs;
+        d3.csv(urlProjets).then(rs=>{
+            projets = rs;
+            console.log(projets);
 
-        //création de la liste des étudiants
-        projets.forEach(p => {
-            for (let index = 1; index < 3; index++) {
-                if(p['N° étudiant '+index])etudiants.push({'id':p['N° étudiant '+index],'nom':p['Nom du collaborateur '+index],'p':p});            
+            //création de la liste des étudiants
+            projets.forEach(p => {
+                for (let index = 1; index <= 3; index++) {
+                    if(p['N° étudiant '+index]){
+                        let etuOri = etus.filter(e=>e['N° étudiant']==p['N° étudiant '+index])[0];
+                        etudiants.push({'id':p['N° étudiant '+index],'nom':p['Nom du collaborateur '+index]
+                            ,'github':etuOri['Votre compte GitHub']
+                            ,'p':p});
+                    }            
+                }
+            });
+            d3.select('#listeEtu')
+                .selectAll("li").data(etudiants).enter().append('li')
+                .text(d=>d.id).text(d=>d.nom)
+                .on('click',voirTravauxEtudiant);
+
+            if(numEtu){
+                let e = etudiants.filter(p=>p.id==numEtu)
+                if(e.length)voirTravaux(e[0]);
             }
-        });
-        d3.select('#listeEtu')
-            .selectAll("li").data(etudiants).enter().append('li')
-            .text(d=>d.id).text(d=>d.nom)
-            .on('click',voirTravauxEtudiant);
-
-        if(numEtu){
-            let e = etudiants.filter(p=>p.id==numEtu)
-            if(e.length)voirTravaux(e[0]);
-        }
+        })
     })
 
     function voirTravauxEtudiant(e,d){
@@ -59,10 +70,12 @@
             urlPages = etu.p.urlPages,
             divProjet = d3.select('#projet');
             divDim = d3.select('#dimensions');
+            divEchelle = d3.select('#echelles');
 
         //initialise l'affichage
         divProjet.selectAll("h5").remove();
         divDim.selectAll("div").remove();
+        divEchelle.selectAll("div").remove();
         //affiche l'url du repository
         divProjet.selectAll("h5").data([urlRepo,urlPages]).enter().append('h5').append('a')
             .attr('href',d=>{
@@ -75,6 +88,10 @@
         dims.append('h5').html(d=>urlPages+"/modelisations/"+etu.id+'-'+d+'.svg');
         dims.append('iframe').attr('title',d=>'Dimensions = '+d)
             .attr('src',d=>urlPages+"/modelisations/"+etu.id+'-'+d+'.svg');
+        //affiche le travaille sur les échelles
+        divEchelle.append('div').append('h4').html(d=>'Echelles');
+        divEchelle.append('iframe').attr('title',d=>'Echelles')
+            .attr('src',d=>"https://"+etu.github+'.github.io/echelles/echelle.html');
 
     }
 </script>
